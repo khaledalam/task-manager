@@ -48,6 +48,7 @@ $config = [
             'showScriptName' => false,
             'rules' => [
                 ['class' => 'yii\rest\UrlRule', 'controller' => 'task'],
+	            'PATCH tasks/<id:\d+>/restore' => 'task/restore',
             ],
         ],
         

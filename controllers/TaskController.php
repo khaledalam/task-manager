@@ -42,7 +42,8 @@ class TaskController extends Controller
 		$sort = 'created_at',
 		$order = 'desc',
 		$limit = 10,
-		$offset = 0
+		$offset = 0,
+		$show_deleted = 0
 	) {
 		$query = Task::find();
 
@@ -51,6 +52,10 @@ class TaskController extends Controller
 		if ($due_date_from) $query->andWhere(['>=', 'due_date', $due_date_from]);
 		if ($due_date_to) $query->andWhere(['<=', 'due_date', $due_date_to]);
 		if ($q) $query->andWhere(['like', 'title', $q]);
+
+		if ($show_deleted) {
+			$query->withDeleted();
+		}
 
 		$query->orderBy([$sort => $order === 'asc' ? SORT_ASC : SORT_DESC]);
 
@@ -90,6 +95,30 @@ class TaskController extends Controller
 		Yii::$app->response->statusCode = 422;
 		return ['errors' => $model->getErrors()];
 	}
+
+	public function actionRestore($id)
+	{
+		$model = Task::find()->withDeleted()->where(['id' => $id])->one();
+
+		if (!$model) {
+			Yii::$app->response->statusCode = 404;
+			return ['error' => 'Task not found or already active.'];
+		}
+
+		if ($model->deleted_at === null) {
+			return ['message' => 'Task is already active.'];
+		}
+
+		$model->deleted_at = null;
+
+		if ($model->save(false, ['deleted_at'])) {
+			return ['message' => 'Task restored successfully.'];
+		}
+
+		Yii::$app->response->statusCode = 500;
+		return ['error' => 'Failed to restore task.'];
+	}
+
 
 	public function actionUpdate($id)
 	{

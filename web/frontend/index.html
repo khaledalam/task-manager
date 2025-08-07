@@ -13,8 +13,8 @@
   <h2 class="mb-4 text-center">📝 Task Manager</h2>
 
   <!-- Filter & Search -->
-  <div class="row mb-3">
-    <div class="col-md-1">
+  <div class="row">
+    <div class="col-md-3">
       <label for="filterStatus">Statuses:</label>
       <select class="form-select" id="filterStatus">
         <option value="">All Statuses</option>
@@ -23,7 +23,7 @@
         <option>completed</option>
       </select>
     </div>
-    <div class="col-md-1">
+    <div class="col-md-3">
       <label for="filterPriority">Priorities:</label>
       <select class="form-select" id="filterPriority">
         <option value="">All Priorities</option>
@@ -32,11 +32,11 @@
         <option>high</option>
       </select>
     </div>
-    <div class="col-md-2">
+    <div class="col-md-3">
       <label for="searchInput">Search by title:</label>
       <input type="text" class="form-control" id="searchInput" placeholder="Search by title">
     </div>
-    <div class="col-md-2">
+    <div class="col-md-3">
       <label for="sortBy">Sort by:</label>
       <select class="form-select" id="sortBy">
         <option value="created_at">Created At</option>
@@ -44,16 +44,29 @@
         <option value="priority">Priority</option>
       </select>
     </div>
-    <div class="col-md-2">
+
+  </div>
+
+  <div class="row mb-3">
+    <div class="col-md-3">
       <label for="filterDueFrom">Due date from</label>
       <input type="date" class="form-control" id="filterDueFrom" placeholder="Due From">
     </div>
-    <div class="col-md-2">
+    <div class="col-md-3">
       <label for="filterDueFrom">Due date to</label>
       <input type="date" class="form-control" id="filterDueTo" placeholder="Due To">
     </div>
 
-    <div class="col-md-2">
+    <div class="col-md-3 flex justify-content-center align-items-center align-self-center">
+      <div class="form-check mt-2">
+        <label class="form-check-label" for="showDeletedToggle">
+          Show Deleted
+        </label>
+        <input class="form-check-input" type="checkbox" id="showDeletedToggle">
+      </div>
+    </div>
+
+    <div class="col-md-3">
       <label>Action</label>
       <button class="btn btn-primary w-100" onclick="loadTasks()">Apply</button>
     </div>
@@ -156,6 +169,16 @@
     modal.show();
   }
 
+  async function restoreTask(id) {
+    try {
+      await axios.patch(`/tasks/${id}/restore`);
+      loadTasks();
+    } catch (err) {
+      alert("❌ Failed to restore task.");
+    }
+  }
+
+
 
   async function loadTasks() {
     const status = document.getElementById('filterStatus').value;
@@ -166,6 +189,8 @@
     const due_date_from = document.getElementById('filterDueFrom').value;
     const due_date_to = document.getElementById('filterDueTo').value;
 
+    const showDeleted = document.getElementById('showDeletedToggle').checked;
+
     const params = {
       status,
       priority,
@@ -174,7 +199,8 @@
       order: 'desc',
       limit: 50,
       due_date_from,
-      due_date_to
+      due_date_to,
+      show_deleted: showDeleted ? 1 : 0
     };
 
     const res = await axios.get('/tasks', { params });
@@ -183,20 +209,30 @@
 
     (res.data.items || res.data).forEach(task => {
       const li = document.createElement('li');
-      li.className = 'list-group-item d-flex justify-content-between align-items-center';
-      li.innerHTML = `
+      li.className = `list-group-item d-flex justify-content-between align-items-center`;
+
+      const isDeleted = !!task.deleted_at;
+      const content = `
     <div>
       <strong>${task.title}</strong>
       <div class="text-muted small">${task.description || ''}</div>
+      ${isDeleted ? '<span class="badge bg-secondary">Deleted</span>' : ''}
     </div>
     <div>
-      <button class="btn btn-sm btn-outline-info me-1" onclick='viewTask(${JSON.stringify(task)})'>View</button>
-      <button class="btn btn-sm btn-outline-primary me-1" onclick='editTask(${JSON.stringify(task)})'>Edit</button>
-      <button class="btn btn-sm btn-outline-danger" onclick="deleteTask(${task.id})">Delete</button>
+      ${isDeleted
+              ? `<button class="btn btn-sm btn-success me-1" onclick="restoreTask(${task.id})">Restore</button>`
+              : `
+          <button class="btn btn-sm btn-outline-info me-1" onclick='viewTask(${JSON.stringify(task)})'>View</button>
+          <button class="btn btn-sm btn-outline-primary me-1" onclick='editTask(${JSON.stringify(task)})'>Edit</button>
+          <button class="btn btn-sm btn-outline-danger" onclick="deleteTask(${task.id})">Delete</button>
+        `}
     </div>
   `;
+
+      li.innerHTML = content;
       list.appendChild(li);
     });
+
   }
 
   async function deleteTask(id) {

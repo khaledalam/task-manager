@@ -72,8 +72,20 @@ class Task extends \yii\db\ActiveRecord
         ];
     }
 
+	public static function find()
+	{
+		return new TaskQuery(get_called_class());
+	}
 
-    /**
+
+	public function delete()
+	{
+		$this->deleted_at = date('Y-m-d H:i:s');
+		return $this->save(false, ['deleted_at']);
+	}
+
+
+	/**
      * column status ENUM value labels
      * @return string[]
      */

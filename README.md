@@ -20,7 +20,9 @@ A backend-focused Task Manager built with Yii2 (Basic Template), offering a comp
 ## Project Structure
 
 /models/Task.php<br />
+models/TaskQuery.php<br/>
 /migrations/m250807_085720_create_task_table.php<br />
+migrations/m250807_095748_add_deleted_at_to_task.php<br/>
 /controllers/TaskController.php<br />
 /web/frontend/index.html<br />
 /config/web.php<br />
