@@ -14,7 +14,8 @@
 
   <!-- Filter & Search -->
   <div class="row mb-3">
-    <div class="col-md-2">
+    <div class="col-md-1">
+      <label for="filterStatus">Statuses:</label>
       <select class="form-select" id="filterStatus">
         <option value="">All Statuses</option>
         <option>pending</option>
@@ -22,7 +23,8 @@
         <option>completed</option>
       </select>
     </div>
-    <div class="col-md-2">
+    <div class="col-md-1">
+      <label for="filterPriority">Priorities:</label>
       <select class="form-select" id="filterPriority">
         <option value="">All Priorities</option>
         <option>low</option>
@@ -30,17 +32,29 @@
         <option>high</option>
       </select>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-2">
+      <label for="searchInput">Search by title:</label>
       <input type="text" class="form-control" id="searchInput" placeholder="Search by title">
     </div>
     <div class="col-md-2">
+      <label for="sortBy">Sort by:</label>
       <select class="form-select" id="sortBy">
-        <option value="created_at">Sort: Created At</option>
+        <option value="created_at">Created At</option>
         <option value="due_date">Due Date</option>
         <option value="priority">Priority</option>
       </select>
     </div>
     <div class="col-md-2">
+      <label for="filterDueFrom">Due date from</label>
+      <input type="date" class="form-control" id="filterDueFrom" placeholder="Due From">
+    </div>
+    <div class="col-md-2">
+      <label for="filterDueFrom">Due date to</label>
+      <input type="date" class="form-control" id="filterDueTo" placeholder="Due To">
+    </div>
+
+    <div class="col-md-2">
+      <label>Action</label>
       <button class="btn btn-primary w-100" onclick="loadTasks()">Apply</button>
     </div>
   </div>
@@ -149,7 +163,20 @@
     const q = document.getElementById('searchInput').value;
     const sort = document.getElementById('sortBy').value;
 
-    const params = { status, priority, q, sort, order: 'desc', limit: 50 };
+    const due_date_from = document.getElementById('filterDueFrom').value;
+    const due_date_to = document.getElementById('filterDueTo').value;
+
+    const params = {
+      status,
+      priority,
+      q,
+      sort,
+      order: 'desc',
+      limit: 50,
+      due_date_from,
+      due_date_to
+    };
+
     const res = await axios.get('/tasks', { params });
     const list = document.getElementById('taskList');
     list.innerHTML = '';
