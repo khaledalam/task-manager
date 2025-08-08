@@ -3,6 +3,7 @@
 namespace app\models;
 
 use Yii;
+use yii\db\ActiveRecord;
 
 /**
  * This is the model class for table "task".
@@ -16,7 +17,7 @@ use Yii;
  * @property string|null $created_at
  * @property string|null $updated_at
  */
-class Task extends \yii\db\ActiveRecord
+class Task extends ActiveRecord
 {
 
     /**
@@ -49,7 +50,8 @@ class Task extends \yii\db\ActiveRecord
             [['title'], 'required'],
             [['description', 'status', 'priority'], 'string'],
             [['due_date', 'created_at', 'updated_at'], 'safe'],
-            [['title'], 'string', 'max' => 255],
+	        [['title'], 'string', 'min' => 5, 'max' => 255],
+	        [['description'], 'string', 'min' => 7, 'max' => 255],
             ['status', 'in', 'range' => array_keys(self::optsStatus())],
             ['priority', 'in', 'range' => array_keys(self::optsPriority())],
         ];
@@ -204,4 +206,29 @@ class Task extends \yii\db\ActiveRecord
     {
         $this->priority = self::PRIORITY_HIGH;
     }
+
+	public function getTags(): \yii\db\ActiveQuery
+	{
+		return $this->hasMany(Tag::class, ['id' => 'tag_id'])
+			->viaTable('task_tag', ['task_id' => 'id']);
+	}
+
+	public function fields()
+	{
+		$fields = parent::fields();
+
+		// Add tags relation
+		$fields['tags'] = function () {
+			return array_map(function ($tag) {
+				return [
+					'id' => $tag->id,
+					'name' => $tag->name,
+				];
+			}, $this->tags);
+		};
+
+		return $fields;
+	}
+
+
 }

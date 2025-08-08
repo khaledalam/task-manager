@@ -13,31 +13,49 @@
   <h2 class="mb-4 text-center">📝 Task Manager</h2>
 
   <!-- Filter & Search -->
-  <div class="row">
-    <div class="col-md-3">
-      <label for="filterStatus">Statuses:</label>
+  <div class="row align-items-end gy-3 mb-4">
+    <div class="col-md-2">
+      <label for="filterStatus" class="form-label">Status</label>
       <select class="form-select" id="filterStatus">
-        <option value="">All Statuses</option>
+        <option value="">All</option>
         <option>pending</option>
         <option>in_progress</option>
         <option>completed</option>
       </select>
     </div>
-    <div class="col-md-3">
-      <label for="filterPriority">Priorities:</label>
+
+    <div class="col-md-2">
+      <label for="filterPriority" class="form-label">Priority</label>
       <select class="form-select" id="filterPriority">
-        <option value="">All Priorities</option>
+        <option value="">All</option>
         <option>low</option>
         <option>medium</option>
         <option>high</option>
       </select>
     </div>
-    <div class="col-md-3">
-      <label for="searchInput">Search by title:</label>
-      <input type="text" class="form-control" id="searchInput" placeholder="Search by title">
+
+    <div class="col-md-2">
+      <label for="filterDueFrom" class="form-label">Due date from</label>
+      <input type="date" class="form-control" id="filterDueFrom">
     </div>
-    <div class="col-md-3">
-      <label for="sortBy">Sort by:</label>
+
+    <div class="col-md-2">
+      <label for="filterDueTo" class="form-label">Due date to</label>
+      <input type="date" class="form-control" id="filterDueTo">
+    </div>
+
+    <div class="col-md-2">
+      <label for="filterTag" class="form-label">Tag (name or ID)</label>
+      <input type="text" class="form-control" id="filterTag" placeholder="e.g. bug">
+    </div>
+
+    <div class="col-md-2">
+      <label for="searchInput" class="form-label">Search Title</label>
+      <input type="text" class="form-control" id="searchInput" placeholder="e.g. login bug">
+    </div>
+
+    <div class="col-md-2">
+      <label for="sortBy" class="form-label">Sort by</label>
       <select class="form-select" id="sortBy">
         <option value="created_at">Created At</option>
         <option value="due_date">Due Date</option>
@@ -45,82 +63,106 @@
       </select>
     </div>
 
-  </div>
-
-  <div class="row mb-3">
-    <div class="col-md-3">
-      <label for="filterDueFrom">Due date from</label>
-      <input type="date" class="form-control" id="filterDueFrom" placeholder="Due From">
-    </div>
-    <div class="col-md-3">
-      <label for="filterDueFrom">Due date to</label>
-      <input type="date" class="form-control" id="filterDueTo" placeholder="Due To">
-    </div>
-
-    <div class="col-md-3 flex justify-content-center align-items-center align-self-center">
-      <div class="form-check mt-2">
-        <label class="form-check-label" for="showDeletedToggle">
-          Show Deleted
-        </label>
+    <div class="col-md-2 d-flex align-items-end">
+      <div class="form-check">
         <input class="form-check-input" type="checkbox" id="showDeletedToggle">
+        <label class="form-check-label" for="showDeletedToggle">Show Deleted</label>
       </div>
     </div>
 
-    <div class="col-md-3">
-      <label>Action</label>
-      <button class="btn btn-primary w-100" onclick="loadTasks()">Apply</button>
+    <div class="col-md-2 d-flex align-items-end">
+      <button class="btn btn-primary w-100" onclick="currentPage = 1; loadTasks()">Apply</button>
     </div>
   </div>
+
+  <hr />
 
   <!-- Task List -->
   <div class="card shadow-sm mb-4">
     <div class="card-body">
       <ul class="list-group" id="taskList"></ul>
+      <div class="d-flex justify-content-between align-items-center px-2 py-2">
+        <div>
+          <button class="btn btn-outline-secondary btn-sm" data-role="prev" onclick="prevPage()">« Prev</button>
+          <button class="btn btn-outline-secondary btn-sm" data-role="next" onclick="nextPage()">Next »</button>
+          <span class="ms-2 small" id="pageIndicator">Page 1</span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <label for="pageSize" class="form-label m-0 small">Page size</label>
+          <select id="pageSize" class="form-select form-select-sm" style="width: 90px" onchange="changePageSize(this.value)">
+            <option>10</option>
+            <option selected>20</option>
+            <option>50</option>
+          </select>
+        </div>
+      </div>
+
     </div>
   </div>
 
   <!-- Task Form -->
   <div class="card shadow-sm">
-    <div class="card-header">Create / Edit Task</div>
-    <div class="card-body">
-      <form id="taskForm">
-        <input type="hidden" name="id" id="taskId">
-        <div class="mb-3">
-          <label class="form-label">Title</label>
-          <input name="title" class="form-control" required minlength="5">
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Description</label>
-          <textarea name="description" class="form-control"></textarea>
-        </div>
-        <div class="row mb-3">
-          <div class="col">
-            <label class="form-label">Status</label>
-            <select name="status" class="form-select">
-              <option>pending</option>
-              <option>in_progress</option>
-              <option>completed</option>
-            </select>
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <span>Create / Edit Task</span>
+      <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#taskFormCollapse">
+        Toggle
+      </button>
+    </div>
+
+    <div class="collapse" id="taskFormCollapse">
+      <div class="card-body">
+        <form id="taskForm" class="needs-validation" novalidate>
+          <input type="hidden" name="id" id="taskId">
+
+          <div class="mb-3">
+            <label class="form-label">Title <small class="text-muted">(min 5 chars)</small></label>
+            <input name="title" class="form-control" required minlength="5">
+            <div class="invalid-feedback">Title must be at least 5 characters.</div>
           </div>
-          <div class="col">
-            <label class="form-label">Priority</label>
-            <select name="priority" class="form-select">
-              <option>low</option>
-              <option selected>medium</option>
-              <option>high</option>
-            </select>
+
+          <div class="mb-3">
+            <label class="form-label">Description <small class="text-muted">(min 7 chars)</small></label>
+            <textarea name="description" class="form-control" minlength="7"></textarea>
+            <div class="invalid-feedback">Description must be at least 10 characters.</div>
           </div>
-          <div class="col">
-            <label class="form-label">Due Date</label>
-            <input type="date" name="due_date" class="form-control">
+
+          <div class="row mb-3">
+            <div class="col">
+              <label class="form-label">Status</label>
+              <select name="status" class="form-select">
+                <option>pending</option>
+                <option>in_progress</option>
+                <option>completed</option>
+              </select>
+            </div>
+            <div class="col">
+              <label class="form-label">Priority</label>
+              <select name="priority" class="form-select">
+                <option>low</option>
+                <option selected>medium</option>
+                <option>high</option>
+              </select>
+            </div>
+            <div class="col">
+              <label class="form-label">Due Date</label>
+              <input type="date" name="due_date" class="form-control">
+            </div>
           </div>
-        </div>
-        <button type="submit" class="btn btn-success">Save Task</button>
-        <button type="button" class="btn btn-secondary" onclick="resetForm()">Clear</button>
-      </form>
-      <div class="alert mt-3 d-none" id="formMessage"></div>
+
+          <div class="mb-3">
+            <label class="form-label">Tags (comma-separated)</label>
+            <input name="tags" id="tagInput" class="form-control" placeholder="e.g. bug, urgent, backend">
+          </div>
+
+          <button type="submit" class="btn btn-success">Save Task</button>
+          <button type="button" class="btn btn-secondary" onclick="resetForm()">Clear</button>
+        </form>
+
+        <div class="alert mt-3 d-none" id="formMessage"></div>
+      </div>
     </div>
   </div>
+
 </div>
 
 <!-- View Task Modal -->
@@ -138,159 +180,14 @@
         <p><strong>Priority:</strong> <span id="modalTaskPriority" class="badge"></span></p>
         <p><strong>Due Date:</strong> <span id="modalTaskDueDate"></span></p>
         <p><strong>Created:</strong> <span id="modalTaskCreated"></span></p>
+        <p><strong>Tags:</strong> <span id="modalTaskTags"></span></p>
       </div>
     </div>
   </div>
 </div>
 
 
-<script>
-  function viewTask(task) {
-    document.getElementById('modalTaskTitle').textContent = task.title || '';
-    document.getElementById('modalTaskDescription').textContent = task.description || '';
-    document.getElementById('modalTaskStatus').textContent = task.status || '';
-    document.getElementById('modalTaskPriority').textContent = task.priority || '';
-    document.getElementById('modalTaskDueDate').textContent = task.due_date || 'N/A';
-    document.getElementById('modalTaskCreated').textContent = task.created_at || 'N/A';
+<script src="./js/main.js"></script>
 
-    const statusBadge = document.getElementById('modalTaskStatus');
-    statusBadge.className = 'badge';
-    if (task.status === 'pending') statusBadge.classList.add('bg-secondary');
-    else if (task.status === 'in_progress') statusBadge.classList.add('bg-warning');
-    else if (task.status === 'completed') statusBadge.classList.add('bg-success');
-
-    const priorityBadge = document.getElementById('modalTaskPriority');
-    priorityBadge.className = 'badge';
-    if (task.priority === 'low') priorityBadge.classList.add('bg-secondary');
-    else if (task.priority === 'medium') priorityBadge.classList.add('bg-info');
-    else if (task.priority === 'high') priorityBadge.classList.add('bg-danger');
-
-    const modal = new bootstrap.Modal(document.getElementById('viewTaskModal'));
-    modal.show();
-  }
-
-  async function restoreTask(id) {
-    try {
-      await axios.patch(`/tasks/${id}/restore`);
-      loadTasks();
-    } catch (err) {
-      alert("❌ Failed to restore task.");
-    }
-  }
-
-
-
-  async function loadTasks() {
-    const status = document.getElementById('filterStatus').value;
-    const priority = document.getElementById('filterPriority').value;
-    const q = document.getElementById('searchInput').value;
-    const sort = document.getElementById('sortBy').value;
-
-    const due_date_from = document.getElementById('filterDueFrom').value;
-    const due_date_to = document.getElementById('filterDueTo').value;
-
-    const showDeleted = document.getElementById('showDeletedToggle').checked;
-
-    const params = {
-      status,
-      priority,
-      q,
-      sort,
-      order: 'desc',
-      limit: 50,
-      due_date_from,
-      due_date_to,
-      show_deleted: showDeleted ? 1 : 0
-    };
-
-    const res = await axios.get('/tasks', { params });
-    const list = document.getElementById('taskList');
-    list.innerHTML = '';
-
-    (res.data.items || res.data).forEach(task => {
-      const li = document.createElement('li');
-      li.className = `list-group-item d-flex justify-content-between align-items-center`;
-
-      const isDeleted = !!task.deleted_at;
-      const content = `
-    <div>
-      <strong>${task.title}</strong>
-      <div class="text-muted small">${task.description || ''}</div>
-      ${isDeleted ? '<span class="badge bg-secondary">Deleted</span>' : ''}
-    </div>
-    <div>
-      ${isDeleted
-              ? `<button class="btn btn-sm btn-success me-1" onclick="restoreTask(${task.id})">Restore</button>`
-              : `
-          <button class="btn btn-sm btn-outline-info me-1" onclick='viewTask(${JSON.stringify(task)})'>View</button>
-          <button class="btn btn-sm btn-outline-primary me-1" onclick='editTask(${JSON.stringify(task)})'>Edit</button>
-          <button class="btn btn-sm btn-outline-danger" onclick="deleteTask(${task.id})">Delete</button>
-        `}
-    </div>
-  `;
-
-      li.innerHTML = content;
-      list.appendChild(li);
-    });
-
-  }
-
-  async function deleteTask(id) {
-    if (!confirm("Delete this task?")) return;
-    await axios.delete(`/tasks/${id}`);
-    loadTasks();
-  }
-
-  function editTask(task) {
-    document.getElementById('taskId').value = task.id;
-    document.querySelector('[name="title"]').value = task.title;
-    document.querySelector('[name="description"]').value = task.description;
-    document.querySelector('[name="status"]').value = task.status;
-    document.querySelector('[name="priority"]').value = task.priority;
-    document.querySelector('[name="due_date"]').value = task.due_date;
-  }
-
-  function resetForm() {
-    document.getElementById('taskForm').reset();
-    document.getElementById('taskId').value = '';
-    document.getElementById('formMessage').classList.add('d-none');
-  }
-
-  document.getElementById('taskForm').addEventListener('submit', async function (e) {
-    e.preventDefault();
-    const form = e.target;
-    const data = Object.fromEntries(new FormData(form).entries());
-
-    const id = data.id;
-    delete data.id;
-
-    try {
-      if (id) {
-        await axios.put(`/tasks/${id}`, data);
-        showMessage("Task updated ✅", 'success');
-      } else {
-        await axios.post('/tasks', data);
-        showMessage("Task created ✅", 'success');
-      }
-      resetForm();
-      loadTasks();
-    } catch (err) {
-      const msg = err?.response?.data?.errors
-              ? Object.values(err.response.data.errors).flat().join('<br>')
-              : '❌ Unknown error';
-      showMessage(msg, 'danger');
-    }
-  });
-
-  function showMessage(msg, type) {
-    const box = document.getElementById('formMessage');
-    box.innerHTML = msg;
-    box.className = `alert alert-${type}`;
-    box.classList.remove('d-none');
-  }
-
-  // Initial Load
-  loadTasks();
-</script>
 </body>
 </html>
