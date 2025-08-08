@@ -30,6 +30,8 @@ migrations/m250807_095748_add_deleted_at_to_task.php<br/>
 
 ## Setup Instructions
 
+\>= php7.4
+
 1. Clone or unzip the repo
 2. Install dependencies:
 ```bash
@@ -37,6 +39,8 @@ composer install
 ```
    
 3. Create database and configure DB settings in config/db.php
+   1. create DB schema called: task_manager_db
+   2. set mysql username and password
 4. Run migration:
 ```bash
 php yii migrate
@@ -44,13 +48,13 @@ php yii migrate
 
 Start server:
 ```bash
-php yii serve
+  php yii serve
 ```
 
-OR using docker-compose:
-```bash
-docker composer up -d # or: docker-compose up -d
-```
+> OR use docker-compose:
+> ```bash
+> docker compose up -d # OR: docker-compose up -d
+> ```
 Visit the frontend:
 ```bash
 http://localhost:8080
